@@ -140,7 +140,7 @@ async def change_access_button(text: str, type_button: str, access: str = f"{Acc
 
 
 
-async def unpaid_bots_on_month(month: int, year: int):
+async def get_unpaid_bots_on_month(month: int, year: int):
     logging.info('unpaid_bots_on_month')
     async with async_session() as session:
         bots = await session.scalar(select(Progects)
@@ -148,9 +148,12 @@ async def unpaid_bots_on_month(month: int, year: int):
             .where(Progects.paid_year < year)
             .where(Progects.state == state_bot.unpaid)
         )
-        return bots
+        if bots:
+            return [i for i in bots]
+        else:
+            return None
 
-async def paid_bots_on_month(month: int, year: int):
+async def get_paid_bots_on_month(month: int, year: int):
     logging.info('paid_bots_on_month')
     async with async_session() as session:
         bots = await session.scalar(select(Progects)
@@ -158,12 +161,27 @@ async def paid_bots_on_month(month: int, year: int):
             .where(Progects.paid_year >= year)
             .where(Progects.state == state_bot.paid)
         )
-        return bots
+        if bots: return [i for i in bots]
+        else: return None
 
-async def removed_bots():
+async def get_removed_bots_on_month(month: int, year: int):
     logging.info('paid_bots_on_month')
+    async with async_session() as session:
+        bots = await session.scalar(select(Progects)
+            .where(Progects.paid_month <= month)
+            .where(Progects.paid_year <= year)
+            .where(Progects.state == state_bot.removed)
+        )
+        if bots: return [i for i in bots]
+        else: return None
+
+async def get_removed_bots():
+    logging.info('removed_bots')
     async with async_session() as session:
         bots = await session.scalar(select(Progects)
             .where(Progects.state == state_bot.removed)
         )
-        return bots
+        if bots:
+            return [i for i in bots]
+        else:
+            return None

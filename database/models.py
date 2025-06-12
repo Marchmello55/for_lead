@@ -44,8 +44,8 @@ class Progects(Base):
     reports: Mapped[str] = mapped_column(String(), default="")
     state: Mapped[str] = mapped_column(String(), default="")
     tasks: Mapped[str] = mapped_column(String(), default="")
-    paid_month: Mapped[str] = mapped_column(Integer(), default=0)
-    paid_year: Mapped[str] = mapped_column(Integer(), default=0)
+    paid_month: Mapped[int] = mapped_column(Integer(), default=0)
+    paid_year: Mapped[int] = mapped_column(Integer(), default=0)
 
 
 async def async_main():

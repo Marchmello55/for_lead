@@ -9,13 +9,30 @@ from database import requests as rq
 from config_data.config import load_config, Config
 from utils.texts import Message_for_user
 from keyboards.server import inline_buttons as ib
+from keyboards import buttons as bt
 
 import logging
+
 
 router = Router()
 config: Config = load_config()
 text = Message_for_user()
 now = datetime.now()
+
+month_names = {
+    1: "январь",
+    2: "февраль",
+    3: "март",
+    4: "апрель",
+    5: "май",
+    6: "июнь",
+    7: "июль",
+    8: "август",
+    9: "сентябрь",
+    10: "октябрь",
+    11: "ноябрь",
+    12: "декабрь"
+}
 
 @router.callback_query(F.data == "server")
 async def server_button(callback: CallbackQuery, bot: Bot):
@@ -23,11 +40,15 @@ async def server_button(callback: CallbackQuery, bot: Bot):
     current_month_year = now.strftime("%M %Y")
     month, year=current_month_year.split(" ")
     if month!="10":month = int(month.replace("0", ""))
-    await callback.message.answer("Выберите месяц для просмотра статуса ботов", reply_markup=await ib.built_inline_moth_and_pagination(month=int(month), year=int(year), prefix="server"))
-
+    if not await rq.get_unpaid_bots_on_month(month=int(month), year=int(year)):
+        await callback.message.answer("Выберите месяц для просмотра статуса ботов", reply_markup=await ib.built_inline_moth_and_pagination(month=int(month), year=int(year), prefix="server"))
+    else:
+        bots = await rq.get_unpaid_bots_on_month(month=int(month), year=int(year))
+        await callback.message.edit_text(f"Выберите месяц для просмотра статуса ботов\n\n!!! у вас {len(bots)} не оплаченных ботов!!!", reply_markup=await ib.built_inline_moth_and_pagination(month=int(month), year=int(year), prefix="server"))
+    await callback.answer()
 
 @router.callback_query(F.data.startswith('server_year_'))
-async def press_server_forward(callback: CallbackQuery, state: FSMContext, bot: Bot) -> None:
+async def press_server(callback: CallbackQuery, state: FSMContext, bot: Bot) -> None:
     """
     Пагинация по списку пользователей вперед
     :param callback:
@@ -35,51 +56,38 @@ async def press_server_forward(callback: CallbackQuery, state: FSMContext, bot: 
     :param bot:
     :return:
     """
-    logging.info(f'process_forward_del_admin: {callback.message.chat.id}')
-    role = '<b>ИСПОЛНИТЕЛЕЙ</b>'
-    list_users: list[User] = await rq.get_users_role(role=rq.UserRole.executor)
-    forward = int(callback.data.split('_')[3]) + 1
-    back = forward - 2
-    keyboard = kb.keyboards_select_executor(list_executor=list_users,
-                                            back=back,
-                                            forward=forward,
-                                            count=6)
-    try:
-        await callback.message.edit_text(text=f'Выберите пользователя, которого вы хотите удалить из {role}',
-                                         reply_markup=keyboard)
-    except TelegramBadRequest:
-        await callback.message.edit_text(text=f'Выберитe пользоватeля, которого вы хотите удалить из {role}',
-                                         reply_markup=keyboard)
+    logging.info(f'press_server_forward')
+    if callback.data.split('_')[2] == ib.Button_pagination.previous:
+        year = int(callback.data.split('_')[3]) - 1
+    else:
+        year = int(callback.data.split('_')[3]) + 1
+    await callback.message.edit_text("Выберите месяц для просмотра статуса ботов", reply_markup=await ib.built_inline_moth_and_pagination(year=int(year), prefix="server"))
+    await callback.answer()
 
+@router.callback_query(F.data.startswith('server_choose'))
+async def press_server_choose_month(callback: CallbackQuery, state: FSMContext, bot: Bot) -> None:
+    logging.info("press_server_choose_month")
+    month, year = callback.data.split('_')[3].split('.')
+    buttons = []
+    states = ib.ServerState(prefix=f"server_state", month=month, year=year)
+    if await rq.get_unpaid_bots_on_month(month=int(month), year=int(year)): buttons.append(states.unpaid)
+    if await rq.get_paid_bots_on_month(month=int(month), year=int(year)): buttons.append(states.paid)
+    if await rq.get_removed_bots_on_month(month=int(month), year=int(year)): buttons.append(states.removed)
+    if len(buttons) !=0:await callback.message.answer(f"Боты на {month_names[int(month)]}", reply_markup=await bt.build_inline_keyboard(buttons))
+    else: await callback.message.answer("Ботов нет")
+    await callback.answer()
 
-@router.callback_query(F.data.startswith('executor_back_'))
-async def process_back_del_admin(callback: CallbackQuery, state: FSMContext, bot: Bot) -> None:
-    """
-    Пагинация по списку пользователей назад
-    :param callback:
-    :param state:
-    :param bot:
-    :return:
-    """
-    logging.info(f'process_back_del_admin: {callback.message.chat.id}')
-    role = '<b>ИСПОЛНИТЕЛЕЙ</b>'
-    list_users = await rq.get_users_role(role=rq.UserRole.executor)
-    back = int(callback.data.split('_')[3]) - 1
-    forward = back + 2
-    keyboard = kb.keyboards_select_executor(list_executor=list_users,
-                                            back=back,
-                                            forward=forward,
-                                            count=6)
-    try:
-        await callback.message.edit_text(text=f'Выберите пользователя, которого вы хотите удалить из {role}',
-                                         reply_markup=keyboard)
-    except TelegramBadRequest:
-        await callback.message.edit_text(text=f'Выберитe пользоватeля, которого вы хотите удалить из {role}',
-                                         reply_markup=keyboard)
+@router.callback_query(F.data.startswith('server_state'))
+async def press_server_choose_state(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    logging.info("press_server_choose_state")
+    state = callback.data.split('_')[3]
+    month, year = callback.data.split('_')[4].split('.')
+    if state == ib.ServerState.state_paid:
+        bots = await rq.get_paid_bots_on_month(month=int(month), year=int(year))
+        await callback.message.answer(f"Оплаченные боты на {month_names[int(month)]}", reply_markup=await bt.build_inline_keyboard_and_pagination(prefix="server_bot", list_users=bots))
 
 
 @router.callback_query(F.data.startswith('select_executor_'))
-@error_handler
 async def process_select_executor(callback: CallbackQuery, state: FSMContext, bot: Bot) -> None:
     """
     Назначение исполнителя на заявку
