@@ -34,15 +34,14 @@ async def build_inline_keyboard(data: list[dict]) -> InlineKeyboardMarkup:
 
     return builder.as_markup()
 
-async def build_inline_keyboard_and_pagination(list_users: list, back, forward, count, prefix: str) -> InlineKeyboardMarkup:
+async def build_inline_keyboard_and_pagination(list_users: list, prefix: str, sheet: int=0, count:int = 6) -> InlineKeyboardMarkup:
     """
     Создает инлайн-клавиатуру на основе кнопок из БД
     :param data: список словарей с данными кнопок
     :return: объект InlineKeyboardMarkup
     """
-    if back < 0:
-        back = 0
-        forward = 2
+    forward = sheet + 1
+    back = sheet - 1
     # считаем сколько всего блоков по заданному количество элементов в блоке
     count_users = len(list_users)
     whole = count_users // count
@@ -54,21 +53,24 @@ async def build_inline_keyboard_and_pagination(list_users: list, back, forward, 
     if forward >= max_forward:
         forward = max_forward
         back = forward - 2
-    print(back, forward, max_forward)
     kb_builder = InlineKeyboardBuilder()
     buttons = []
-    for user in list_users[back*count:(forward-1)*count]:
-        text = user.username
-        button = f'{prefix}{user.tg_id}'
+    for bot in list_users[back*count:(forward-1)*count]:
+        text = bot.name
+        button = f'{prefix}_select_{bot.id}'
         buttons.append(InlineKeyboardButton(
             text=text,
             callback_data=button))
-    button_back = InlineKeyboardButton(text='<<<<',
-                                       callback_data=f'{prefix}_{str(back)}')
-    button_count = InlineKeyboardButton(text=f'{back+1}',
+    if back >= 0:
+        button_back = InlineKeyboardButton(text='⬅️',
+                                           callback_data=f'{prefix}_sheet_{str(back)}')
+    else:
+        button_back = InlineKeyboardButton(text=' ',
+                                           callback_data=f'none')
+    button_count = InlineKeyboardButton(text=f'{sheet+1}',
                                         callback_data='none')
-    button_next = InlineKeyboardButton(text='>>>>',
-                                       callback_data=f'{prefix}_{str(forward)}')
+    button_next = InlineKeyboardButton(text='➡️',
+                                       callback_data=f'{prefix}_sheet_{str(forward)}')
 
     kb_builder.row(*buttons, width=1)
     kb_builder.row(button_back, button_count, button_next)

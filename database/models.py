@@ -39,6 +39,7 @@ class Progects(Base):
     exercise: Mapped[str] = mapped_column(String(), default="")
     customer: Mapped[str] = mapped_column(String(), default="")
     link_to_chat: Mapped[str] = mapped_column(String(), default="")
+    link_to_bot: Mapped[str] = mapped_column(String(), default="")
     executor: Mapped[str] = mapped_column(String(), default="")
     deadline: Mapped[str] = mapped_column(String(), default="")
     reports: Mapped[str] = mapped_column(String(), default="")

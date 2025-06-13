@@ -1,7 +1,7 @@
 import logging
 
 from database.models import async_session
-from database.models import User, Buttons, Progects
+from database.models import User, Progects
 from sqlalchemy import select, func, delete
 from dataclasses import dataclass
 
@@ -67,13 +67,9 @@ async def check_user(tg_id: int):
 
 """BUTTON"""
 
-
+"""
 async def add_new_button(text: str, type_button: str) -> None:
-    """
-    Добавляет новую кнопку с ручным управлением ID (увеличивает на 1 от максимального существующего)
-    :param text: текст кнопки
-    :param type_button: тип кнопки
-    """
+
     logging.info('add_new_button')
     async with async_session() as session:
         # Получаем максимальный существующий ID
@@ -101,11 +97,7 @@ async def get_button_id(id: int):
         return button.access
 
 async def get_buttons_type_button(type_button: str, access: str = f"{Access.free}") -> list[Buttons]:
-    """
-    Получение списка пользователей с заданной ролью
-    :param type_button:
-    :return:
-    """
+
     logging.info('get_users_type_button')
     async with async_session() as session:
         result = await session.execute(
@@ -134,11 +126,17 @@ async def change_access_button(text: str, type_button: str, access: str = f"{Acc
         )
         button.access = access
         await session.commit()
-
+"""
 
 """PROGECTS"""
 
 
+async def get_bot_id(id: int):
+    logging.info('get_bot_id')
+    async with async_session() as session:
+        bot = await session.scalar(select(Progects).where(Progects.id == id))
+        if bot: return bot
+        else: return None
 
 async def get_unpaid_bots_on_month(month: int, year: int):
     logging.info('unpaid_bots_on_month')

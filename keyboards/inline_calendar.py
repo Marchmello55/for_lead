@@ -22,7 +22,7 @@ async def generate_calendar_kb(prefix: str, year=None, month=None, highlight_day
     # Кнопки года и месяца
     kb.inline_keyboard.append([
         InlineKeyboardButton(text=f"<<", callback_data=f"{prefix}_back_year_{year}"),
-        InlineKeyboardButton(text=f"{year}", callback_data=f""),
+        InlineKeyboardButton(text=f"{year}", callback_data=f"none"),
         InlineKeyboardButton(text=f">>", callback_data=f"{prefix}_next_year_{year}")
     ])
 

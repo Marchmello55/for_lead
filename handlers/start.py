@@ -15,7 +15,7 @@ text = Message_for_user()
 
 @router.message(CommandStart())
 async def process_press_start(message: Message, bot: Bot):
-    if message.from_user.id == config.tg_bot.support_id:
+    if message.from_user.id == int(config.tg_bot.support_id):
         data = [
             {"text": "Подчиненные", "callback": "subordinates"},
             {"text": "Проекты", "callback": "progects"},
