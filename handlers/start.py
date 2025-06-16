@@ -18,7 +18,7 @@ async def process_press_start(message: Message, bot: Bot):
     if message.from_user.id == int(config.tg_bot.support_id):
         data = [
             {"text": "Подчиненные", "callback": "subordinates"},
-            {"text": "Проекты", "callback": "progects"},
+            {"text": "Проекты", "callback": "projects"},
             {"text": "Сервер", "callback": "server"}
         ]
         name = message.from_user.username or message.from_user.first_name
