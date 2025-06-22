@@ -36,12 +36,13 @@ month_names = {
 
 @router.callback_query(F.data == "server")
 async def server_button(callback: CallbackQuery, bot: Bot):
-
+    logging.info("server_button")
+    logging.info(f"{callback.data}")
     current_month_year = now.strftime("%m %Y")
     month, year=current_month_year.split(" ")
     if month!="10":month = int(month.replace("0", ""))
     if not await rq.get_unpaid_bots_on_month(month=int(month), year=int(year)):
-        await callback.message.answer("Выберите месяц для просмотра статуса ботов", reply_markup=await ib.built_inline_moth_and_pagination(month=int(month), year=int(year), prefix="server"))
+        await callback.message.edit_text("Выберите месяц для просмотра статуса ботов", reply_markup=await ib.built_inline_moth_and_pagination(month=int(month), year=int(year), prefix="server"))
     else:
         bots = await rq.get_unpaid_bots_on_month(month=int(month), year=int(year))
         await callback.message.edit_text(f"Выберите месяц для просмотра статуса ботов\n\n!!! у вас {len(bots)} не оплаченных ботов!!!", reply_markup=await ib.built_inline_moth_and_pagination(month=int(month), year=int(year), prefix="server"))
@@ -57,6 +58,7 @@ async def press_server(callback: CallbackQuery, state: FSMContext, bot: Bot) -> 
     :return:
     """
     logging.info(f'press_server_forward')
+    logging.info(f"{callback.data}")
     if callback.data.split('_')[3] == ib.Button_pagination.previous:
         year = int(callback.data.split('_')[2]) - 1
     else:
@@ -67,21 +69,23 @@ async def press_server(callback: CallbackQuery, state: FSMContext, bot: Bot) -> 
 @router.callback_query(F.data.startswith('server_choose'))
 async def press_server_choose_month(callback: CallbackQuery, state: FSMContext, bot: Bot) -> None:
     logging.info("press_server_choose_month")
+    logging.info(f"{callback.data}")
     month, year = callback.data.split('_')[2].split('.')
     buttons = []
     states = ib.ServerState(prefix=f"server_state", month=month, year=year)
     if await rq.get_unpaid_bots_on_month(month=int(month), year=int(year)): buttons.append(states.unpaid)
     if await rq.get_paid_bots_on_month(month=int(month), year=int(year)): buttons.append(states.paid)
     if await rq.get_removed_bots_on_month(month=int(month), year=int(year)): buttons.append(states.removed)
-    if len(buttons) !=0:await callback.message.answer(f"Боты на {month_names[f"{int(month)}"]}", reply_markup=await ib.build_inline_keyboard(buttons))
+    if len(buttons) !=0:await callback.message.edit_text(f"Боты на {month_names[f"{int(month)}"]}", reply_markup=await ib.build_inline_keyboard(buttons))
     else: await callback.message.answer("Ботов нет")
     await callback.answer()
 
 #это надо фиксить
 
-@router.callback_query(F.data.startswith(f'server_{ib.ServerState.state_paid}',f'server_{ib.ServerState.state_unpaid}',f'server_{ib.ServerState.state_remove}'))
+"""@router.callback_query(F.data.startswith(f'server_{ib.ServerState.state_paid}',f'server_{ib.ServerState.state_unpaid}',f'server_{ib.ServerState.state_remove}'))
 async def press_server_choose_state(callback: CallbackQuery, state: FSMContext, bot: Bot):
     logging.info("press_server_choose_state")
+    logging.info(f"{callback.data}")
     state = callback.data.split('_')[3]
     month, year = callback.data.split('_')[4].split('.')
     if state == ib.ServerState.state_paid:
@@ -94,10 +98,12 @@ async def press_server_choose_state(callback: CallbackQuery, state: FSMContext, 
         bots: list = await rq.get_paid_bots_on_month(month=int(month), year=int(year))
         await callback.message.answer(f"Снятые с работы боты на {month_names[int(month)]}", reply_markup=await ib.build_inline_keyboard_and_pagination(prefix=f"server_bot_remove_{month}.{year}", list_users=bots))
     await callback.answer()
+"""
 
 @router.callback_query(F.data.startswith('sheet_server_bot'))
 async def press_choose_sheet(callback: CallbackQuery, state: FSMContext, bot: Bot):
     logging.info("press_server_choose_sheet")
+    logging.info(f"{callback.data}")
     num_sheet = int(callback.data.split("_")[-1])
     month, year = str(callback.data.split("_")[4]).split(".")
     state = callback.data.split("_")[3]
@@ -110,7 +116,7 @@ async def press_choose_sheet(callback: CallbackQuery, state: FSMContext, bot: Bo
 @router.callback_query(F.data.startswith('select_server_bot'))
 async def press_select_bot(callback: CallbackQuery, state: FSMContext, bot: Bot):
     logging.info("press_server_select_bot")
+    logging.info(f"{callback.data}")
     month, year = str(callback.data.split("_")[4]).split(".")
     state = callback.data.split("_")[3]
     bot_id = int(callback.data.split("_")[-1])
-

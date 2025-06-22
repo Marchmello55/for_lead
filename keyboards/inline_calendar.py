@@ -27,9 +27,9 @@ async def generate_calendar_kb(prefix: str, year=None, month=None, highlight_day
     ])
 
     kb.inline_keyboard.append([
-        InlineKeyboardButton(text=f"<", callback_data=f"{prefix}_back_month_{month}"),
-        InlineKeyboardButton(text=f"{month}", callback_data=f""),
-        InlineKeyboardButton(text=f">", callback_data=f"{prefix}_next_month_{month}")
+        InlineKeyboardButton(text=f"<", callback_data=f"{prefix}_back_month_{month}.{year}"),
+        InlineKeyboardButton(text=f"{calendar.month_name[month]}", callback_data=f"none"),
+        InlineKeyboardButton(text=f">", callback_data=f"{prefix}_next_month_{month}.{year}")
     ])
 
     # Генерация дней месяца
@@ -41,12 +41,16 @@ async def generate_calendar_kb(prefix: str, year=None, month=None, highlight_day
                 row.append(InlineKeyboardButton(text=" ", callback_data=f"ignore"))
             else:
                 text = f"[{day}]" if day == highlight_day else f" {day} "
-                row.append(InlineKeyboardButton(text=text, callback_data=f"{prefix}_day_{year}_{month}_{day}"))
+                row.append(InlineKeyboardButton(text=text, callback_data=f"{prefix}_day_{day}.{month}.{year}"))
         kb.inline_keyboard.append(row)
 
     kb.inline_keyboard.append([
-        InlineKeyboardButton(text="Cancel", callback_data="cancel"),
-        InlineKeyboardButton(text="Today", callback_data="today"),
+        InlineKeyboardButton(text="Cancel", callback_data=f"{prefix}_cancel"),
+        InlineKeyboardButton(text="Today", callback_data=f"{prefix}_today")
+    ])
+
+    kb.inline_keyboard.append([
+        InlineKeyboardButton(text="Главное меню", callback_data="main-menu")
     ])
 
     return kb

@@ -19,8 +19,8 @@ class User(Base):
     tg_id: Mapped[int] = mapped_column(primary_key=True)
     role: Mapped[str] = mapped_column(String(), default="")
 
-class Exexutor(Base):
-    __tablename__ = "executor"
+class Executors(Base):
+    __tablename__ = "executosr"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(), default="")
@@ -30,10 +30,10 @@ class Exexutor(Base):
     task: Mapped[str] = mapped_column(String(), default="")
 
 
-class Progects(Base):
-    __tablename__ = "progects"
+class Projects(Base):
+    __tablename__ = "projects"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    bot_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(), default="")
     price: Mapped[str] = mapped_column(String(), default="")
     exercise: Mapped[str] = mapped_column(String(), default="")

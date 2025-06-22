@@ -1,7 +1,7 @@
 import logging
 
 from database.models import async_session
-from database.models import User, Progects
+from database.models import User, Projects
 from sqlalchemy import select, func, delete
 from dataclasses import dataclass
 
@@ -10,12 +10,6 @@ from dataclasses import dataclass
 class Roles:
     user: str = "user"
     admin: str = "admin"
-
-
-@dataclass
-class Type_button:
-    inline: str = "inline"
-    reply: str = "reply"
 
 
 @dataclass
@@ -128,23 +122,23 @@ async def change_access_button(text: str, type_button: str, access: str = f"{Acc
         await session.commit()
 """
 
-"""PROGECTS"""
+"""Projects"""
 
 
-async def get_bot_id(id: int):
+async def get_bot_id(bot_id: int):
     logging.info('get_bot_id')
     async with async_session() as session:
-        bot = await session.scalar(select(Progects).where(Progects.id == id))
+        bot = await session.scalar(select(Projects).where(Projects.bot_id == bot_id))
         if bot: return bot
         else: return None
 
 async def get_unpaid_bots_on_month(month: int, year: int):
     logging.info('unpaid_bots_on_month')
     async with async_session() as session:
-        bots = await session.scalar(select(Progects)
-            .where(Progects.paid_month < month)
-            .where(Progects.paid_year < year)
-            .where(Progects.state == state_bot.unpaid)
+        bots = await session.scalars(select(Projects)
+            .where(Projects.paid_month < month)
+            .where(Projects.paid_year < year)
+            .where(Projects.state == state_bot.unpaid)
         )
         if bots:
             return [i for i in bots]
@@ -154,10 +148,10 @@ async def get_unpaid_bots_on_month(month: int, year: int):
 async def get_paid_bots_on_month(month: int, year: int):
     logging.info('paid_bots_on_month')
     async with async_session() as session:
-        bots = await session.scalar(select(Progects)
-            .where(Progects.paid_month >= month)
-            .where(Progects.paid_year >= year)
-            .where(Progects.state == state_bot.paid)
+        bots = await session.scalars(select(Projects)
+            .where(Projects.paid_month >= month)
+            .where(Projects.paid_year >= year)
+            .where(Projects.state == state_bot.paid)
         )
         if bots: return [i for i in bots]
         else: return None
@@ -165,10 +159,10 @@ async def get_paid_bots_on_month(month: int, year: int):
 async def get_removed_bots_on_month(month: int, year: int):
     logging.info('paid_bots_on_month')
     async with async_session() as session:
-        bots = await session.scalar(select(Progects)
-            .where(Progects.paid_month <= month)
-            .where(Progects.paid_year <= year)
-            .where(Progects.state == state_bot.removed)
+        bots = await session.scalars(select(Projects)
+            .where(Projects.paid_month <= month)
+            .where(Projects.paid_year <= year)
+            .where(Projects.state == state_bot.removed)
         )
         if bots: return [i for i in bots]
         else: return None
@@ -176,10 +170,76 @@ async def get_removed_bots_on_month(month: int, year: int):
 async def get_removed_bots():
     logging.info('removed_bots')
     async with async_session() as session:
-        bots = await session.scalar(select(Progects)
-            .where(Progects.state == state_bot.removed)
+        bots = await session.scalars(select(Projects)
+            .where(Projects.state == state_bot.removed)
         )
         if bots:
             return [i for i in bots]
         else:
             return None
+
+async def get_bot_id_by_name(name: str):
+    logging.info("get_bot_id_by_name")
+    async with async_session() as session:
+        bot = await session.scalar(select(Projects).where(Projects.name == name))
+        return bot
+
+async def add_bot(name: str):
+    logging.info("add_bot")
+    async with async_session() as session:
+        bot = await session.scalar(select(Projects).where(Projects.name == name))
+        if not bot:
+            session.add(Projects(name=name))
+            await session.commit()
+
+async def update_price(bot_id: int, price: str) -> None:
+    logging.info('update_price')
+    async with async_session() as session:
+        bot = await session.scalar(select(Projects).where(Projects.bot_id == bot_id))
+        bot.price = price
+        await session.commit()
+
+
+async def update_exercise(bot_id: int, exercise: str) -> None:
+    logging.info('update_exercise')
+    async with async_session() as session:
+        bot = await session.scalar(select(Projects).where(Projects.bot_id == bot_id))
+        await session.commit()
+        bot.exercise = exercise
+
+
+async def update_customer(bot_id: int, customer: str) -> None:
+    logging.info('update_customer')
+    async with async_session() as session:
+        bot = await session.scalar(select(Projects).where(Projects.bot_id == bot_id))
+        bot.customer = customer
+        await session.commit()
+
+
+async def update_link_to_chat(bot_id: int, link_to_chat: str) -> None:
+    logging.info('update_link_to_chat')
+    async with async_session() as session:
+        bot = await session.scalar(select(Projects).where(Projects.bot_id == bot_id))
+        bot.link_to_chat = link_to_chat
+        await session.commit()
+
+
+async def update_deadline(bot_id: int, deadline: str) -> None:
+    logging.info('update_deadline')
+    async with async_session() as session:
+        bot = await session.scalar(select(Projects).where(Projects.bot_id == bot_id))
+        bot.deadline = deadline
+        await session.commit()
+
+
+async def update_executor(bot_id: int, executor: str) -> None:
+    logging.info('update_executor')
+    async with async_session() as session:
+        bot = await session.scalar(select(Projects).where(Projects.bot_id == bot_id))
+        bot.executor = executor
+        await session.commit()
+
+
+"""Executors"""
+
+

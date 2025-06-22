@@ -9,6 +9,10 @@ class text_button:
     user: str = "user"
     user: str = "user"
 
+class ForState:
+    back_button = "back"
+    skip_button = "skip"
+    main_menu_button = "main_menu"
 
 async def build_inline_keyboard(data: list[dict]) -> InlineKeyboardMarkup:
     """

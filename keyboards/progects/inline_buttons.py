@@ -22,6 +22,10 @@ class BaseActions:
             "callback": f"{self.prefix}_{action}"
         })
 
+    def _add_button_no_prefix(self, text: str, action: str):
+        self.buttons.append({"text": text,
+            "callback": f"{action}"})
+
     def get_buttons(self):
         return self.buttons
 
@@ -77,11 +81,10 @@ class SectorProjects(BaseActions):
 class ForState(BaseActions):
     back_button = "back"
     skip_button = "skip"
-    main_menu_button = "main_menu"
+    main_menu_button = "main-menu"
 
     def __init__(self, prefix: str, need_buttons: list):
         super().__init__(prefix)
         if self.skip_button in need_buttons: self._add_button("Пропустить", self.skip_button)
         if self.back_button in need_buttons: self._add_button("Назад", self.back_button)
-        if self.main_menu_button in need_buttons: self._add_button("Главное меню", self.main_menu_button)
-
+        if self.main_menu_button in need_buttons: self._add_button_no_prefix("Главное меню", self.main_menu_button)
