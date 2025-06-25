@@ -22,14 +22,24 @@ async def generate_calendar_kb(prefix: str, year=None, month=None, highlight_day
     # Кнопки года и месяца
     kb.inline_keyboard.append([
         InlineKeyboardButton(text=f"<<", callback_data=f"{prefix}_back_year_{year}"),
-        InlineKeyboardButton(text=f"{year}", callback_data=f"none"),
+        InlineKeyboardButton(text=f"[{year}]" if year == now.year else f"{year}", callback_data=f"none"),
         InlineKeyboardButton(text=f">>", callback_data=f"{prefix}_next_year_{year}")
     ])
 
     kb.inline_keyboard.append([
         InlineKeyboardButton(text=f"<", callback_data=f"{prefix}_back_month_{month}.{year}"),
-        InlineKeyboardButton(text=f"{calendar.month_name[month]}", callback_data=f"none"),
+        InlineKeyboardButton(text=f"[{calendar.month_name[month]}]" if month == now.month and year == now.year else f"{calendar.month_name[month]}", callback_data=f"none"),
         InlineKeyboardButton(text=f">", callback_data=f"{prefix}_next_month_{month}.{year}")
+    ])
+
+    kb.inline_keyboard.append([
+        InlineKeyboardButton(text=" Mo ", callback_data="none"),
+        InlineKeyboardButton(text=" Tu ", callback_data="none"),
+        InlineKeyboardButton(text=" We ", callback_data="none"),
+        InlineKeyboardButton(text=" Th ", callback_data="none"),
+        InlineKeyboardButton(text=" Fr ", callback_data="none"),
+        InlineKeyboardButton(text=" Sa ", callback_data="none"),
+        InlineKeyboardButton(text=" Su ", callback_data="none"),
     ])
 
     # Генерация дней месяца
@@ -40,7 +50,7 @@ async def generate_calendar_kb(prefix: str, year=None, month=None, highlight_day
             if day == 0:
                 row.append(InlineKeyboardButton(text=" ", callback_data=f"ignore"))
             else:
-                text = f"[{day}]" if day == highlight_day else f" {day} "
+                text = f"[{day}]" if day == highlight_day and month == now.month and year == now.year else f" {day} "
                 row.append(InlineKeyboardButton(text=text, callback_data=f"{prefix}_day_{day}.{month}.{year}"))
         kb.inline_keyboard.append(row)
 

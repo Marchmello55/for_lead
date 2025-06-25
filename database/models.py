@@ -43,6 +43,7 @@ class Projects(Base):
     executor: Mapped[str] = mapped_column(String(), default="")
     deadline: Mapped[str] = mapped_column(String(), default="")
     reports: Mapped[str] = mapped_column(String(), default="")
+    work_stage: Mapped[str] = mapped_column(String(), default="")
     state: Mapped[str] = mapped_column(String(), default="")
     tasks: Mapped[str] = mapped_column(String(), default="")
     paid_month: Mapped[int] = mapped_column(Integer(), default=0)

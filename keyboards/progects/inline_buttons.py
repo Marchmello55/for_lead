@@ -46,12 +46,12 @@ class ActionProjects(BaseActions):
 
 class SectorProjects(BaseActions):
     ready_project = "ready"
-    in_work_project = "in_work"
+    in_work_project = "in-work"
     canceled_project = "canceled"
     agrees_project = "agrees"
     all_project = "all"
-    by_id_project = "by_id"
-    by_name_project = "by_name"
+    by_id_project = "by-id"
+    by_name_project = "by-name"
     send_all_project = "send_all"
 
     def __init__(self, prefix: str):
@@ -88,3 +88,31 @@ class ForState(BaseActions):
         if self.skip_button in need_buttons: self._add_button("Пропустить", self.skip_button)
         if self.back_button in need_buttons: self._add_button("Назад", self.back_button)
         if self.main_menu_button in need_buttons: self._add_button_no_prefix("Главное меню", self.main_menu_button)
+
+async def buttons_for_projects(bot_data_id: int, prefix: str, data: list) -> InlineKeyboardMarkup:
+    """
+    Создаем клавиатуру для просмотра проектов
+    :param bot_data_id: индекс объекта в списке
+    :param prefix: приставка
+    :param data: список объектов
+    :return:
+    """
+
+    kb_builder = InlineKeyboardBuilder()
+    if bot_data_id != 0:
+        button_back = InlineKeyboardButton(text='⬅️',
+                                           callback_data=f'{prefix}_bot-data-id_{bot_data_id-1}')
+    else:
+        button_back = InlineKeyboardButton(text=' ',
+                                           callback_data=f'none')
+    button_count = InlineKeyboardButton(text=f'{data[bot_data_id]}',
+                                        callback_data='none')
+    if bot_data_id != len(data) - 1:
+        button_next = InlineKeyboardButton(text='➡️',
+                                           callback_data=f'{prefix}_bot-data-id_{bot_data_id+1}')
+    else:
+        button_next = InlineKeyboardButton(text=' ',
+                                           callback_data=f'none')
+    kb_builder.row(button_back, button_count, button_next)
+
+    return kb_builder.as_markup()

@@ -5,6 +5,7 @@ from database.models import User, Projects
 from sqlalchemy import select, func, delete
 from dataclasses import dataclass
 
+from keyboards.progects.inline_buttons import SectorProjects
 
 @dataclass
 class Roles:
@@ -132,6 +133,8 @@ async def get_bot_id(bot_id: int):
         if bot: return bot
         else: return None
 
+# для server
+
 async def get_unpaid_bots_on_month(month: int, year: int):
     logging.info('unpaid_bots_on_month')
     async with async_session() as session:
@@ -177,6 +180,65 @@ async def get_removed_bots():
             return [i for i in bots]
         else:
             return None
+
+# for projects
+
+async def get_ready_projects():
+    logging.info('get_ready_projects')
+    async with async_session() as session:
+        bots = await session.scalars(select(Projects)
+            .where(Projects.work_stage == SectorProjects.ready_project)
+        )
+        if bots:
+            return [i for i in bots]
+        else:
+            return None
+
+async def get_in_work_projects():
+    logging.info('get_in_work_projects')
+    async with async_session() as session:
+        bots = await session.scalars(select(Projects)
+            .where(Projects.work_stage == SectorProjects.in_work_project)
+        )
+        if bots:
+            return [i for i in bots]
+        else:
+            return None
+
+
+async def get_canceled_projects():
+    logging.info('get_canceled_projects')
+    async with async_session() as session:
+        bots = await session.scalars(select(Projects)
+            .where(Projects.work_stage == SectorProjects.canceled_project)
+        )
+        if bots:
+            return [i for i in bots]
+        else:
+            return None
+
+
+async def get_agrees_projects():
+    logging.info('get_agrees_projects')
+    async with async_session() as session:
+        bots = await session.scalars(select(Projects)
+            .where(Projects.work_stage == SectorProjects.agrees_project)
+        )
+        if bots:
+            return [i for i in bots]
+        else:
+            return None
+
+
+async def get_all_projects():
+    logging.info('get_ready_projects')
+    async with async_session() as session:
+        bots = await session.scalars(select(Projects))
+        if bots:
+            return [i for i in bots]
+        else:
+            return None
+
 
 async def get_bot_id_by_name(name: str):
     logging.info("get_bot_id_by_name")
